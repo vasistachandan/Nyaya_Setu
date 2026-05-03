@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ccms_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ccms_admin
+      POSTGRES_PASSWORD: ccms_secret
+      POSTGRES_DB: ccms_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - ccms_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ccms_admin -d ccms_ai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ccms_pgdata:

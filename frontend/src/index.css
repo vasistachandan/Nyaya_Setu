@@ -1,0 +1,31 @@
+/* PDF Text Layer Highlight Styles */
+.react-pdf__Page {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.react-pdf__Page__textContent {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.react-pdf__Page__textContent span {
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+  color: transparent;
+  line-height: 1;
+}
+
+.react-pdf__Page__textContent span.highlighted {
+  background-color: rgba(255, 213, 0, 0.55) !important;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+}
+
+.react-pdf__Page__textContent span:hover {
+  background-color: rgba(99, 102, 241, 0.2);
+}

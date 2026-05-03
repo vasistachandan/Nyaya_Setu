@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+.cache/
+.vite/
+
+# Storage / DB
+backend/storage/
+*.sqlite
+*.sqlite-journal
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.log
