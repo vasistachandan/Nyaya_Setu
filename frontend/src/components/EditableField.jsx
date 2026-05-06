@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Pencil, Check, X, FileText } from "lucide-react";
-import { hasPdfSourceRef } from "../lib/hasPdfSource";
+import { Pencil, Check, X } from "lucide-react";
 
 export default function EditableField({
   label,
@@ -10,12 +9,12 @@ export default function EditableField({
   highlight = false,
   rightSlot = null,
   placeholder = "",
-  /** Optional `{ page, quote }` from extraction — shows “from PDF” styling when set. */
+  fieldKey,
   pdfSource = null,
-  /** Current field value when this card is active (PDF highlight + ring). */
-  activeField = "",
-  /** Called with `String(value)` when the card is activated for PDF search. */
+  activeFieldKey = "",
   onFieldActivate = null,
+  /** Permanent cyan tile (Case Number, Court, Date of Order, Bench). Other fields use hover highlight. */
+  alwaysHighlighted = false,
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? "");
@@ -32,16 +31,48 @@ export default function EditableField({
   };
 
   const strVal = String(value ?? "");
-  const isActive = activeField !== "" && activeField === strVal;
-  const fromPdf = hasPdfSourceRef(pdfSource);
+  const isActive = Boolean(fieldKey) && activeFieldKey === fieldKey;
 
   const handleCardActivate = (e) => {
     if (editing) return;
     if (e.target.closest("button")) return;
-    onFieldActivate?.(strVal);
+    if (!fieldKey || !onFieldActivate) return;
+    onFieldActivate({ key: fieldKey, pdfSource: pdfSource ?? null, value: strVal });
   };
 
-  const clickable = Boolean(onFieldActivate) && !editing;
+  const clickable = Boolean(fieldKey && onFieldActivate) && !editing;
+
+  const surfaceClasses = (() => {
+    if (highlight) {
+      return "border-danger/45 bg-danger/[0.07] shadow-[inset_3px_0_0_0] shadow-danger/55";
+    }
+    if (isActive) {
+      return [
+        "border-cyan-400/50",
+        "bg-gradient-to-br from-cyan-500/[0.12] via-brand-500/[0.06] to-indigo-500/10",
+        "shadow-[0_0_0_1px_rgba(34,211,238,0.18),0_8px_40px_-16px_rgba(34,211,238,0.15),0_12px_40px_-20px_rgba(99,102,241,0.2)]",
+        "ring-1 ring-cyan-400/25",
+      ].join(" ");
+    }
+    if (clickable) {
+      if (alwaysHighlighted) {
+        return [
+          "border-cyan-400/40",
+          "bg-gradient-to-br from-brand-500/[0.09] via-surface/80 to-cyan-500/[0.08]",
+          "shadow-[0_0_0_1px_rgba(34,211,238,0.14),0_10px_40px_-16px_rgba(99,102,241,0.22)]",
+          "active:scale-[0.995]",
+        ].join(" ");
+      }
+      return [
+        "border-line/80 bg-surface/50 shadow-sm shadow-black/20",
+        "hover:border-cyan-400/40",
+        "hover:bg-gradient-to-br hover:from-brand-500/[0.09] hover:via-surface/80 hover:to-cyan-500/[0.08]",
+        "hover:shadow-[0_0_0_1px_rgba(34,211,238,0.14),0_10px_40px_-16px_rgba(99,102,241,0.22)]",
+        "active:scale-[0.995]",
+      ].join(" ");
+    }
+    return "border-line/50 bg-bg-subtle/90 shadow-sm shadow-black/15";
+  })();
 
   return (
     <div
@@ -53,35 +84,30 @@ export default function EditableField({
           ? (e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onFieldActivate?.(strVal);
+                onFieldActivate?.({ key: fieldKey, pdfSource: pdfSource ?? null, value: strVal });
               }
             }
           : undefined
       }
-      className={`group rounded-xl border p-3 transition ${
-        clickable ? "cursor-pointer" : "cursor-default"
-      } ${
-        highlight
-          ? "border-danger/40 bg-danger/5"
-          : isActive
-            ? `border-indigo-500 bg-bg-subtle${fromPdf ? " shadow-[inset_3px_0_0_0] shadow-amber-500/55" : ""}`
-            : fromPdf
-              ? "border-amber-500/25 bg-amber-500/[0.07] hover:border-amber-500/40"
-              : "border-transparent bg-bg-subtle hover:border-brand-500/30"
-      } ${fromPdf && !highlight && !isActive ? "shadow-[inset_3px_0_0_0] shadow-amber-500/55" : ""}`}
+      className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 ease-out ${
+        clickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1117]" : "cursor-default"
+      } ${surfaceClasses}`}
     >
       <div className="mb-1 flex items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <span className="field-label">{label}</span>
-          {fromPdf && (
-            <span
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-100 ring-1 ring-amber-400/35"
-              title="This value was linked to text in the judgment PDF during extraction. Click to highlight it."
-            >
-              <FileText className="h-3 w-3 opacity-90" aria-hidden />
-              In PDF
-            </span>
-          )}
+          <span
+            className={`field-label transition-colors duration-200 ${
+              isActive
+                ? "text-cyan-200/90"
+                : alwaysHighlighted && clickable
+                  ? "text-cyan-100/70"
+                  : clickable
+                    ? "group-hover:text-cyan-100/70"
+                    : ""
+            }`}
+          >
+            {label}
+          </span>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {rightSlot}
@@ -89,7 +115,13 @@ export default function EditableField({
             <button
               type="button"
               onClick={startEdit}
-              className="pointer-events-none opacity-0 transition group-hover:pointer-events-auto group-hover:opacity-100 focus:pointer-events-auto focus:opacity-100"
+              className={`transition-opacity ${
+                clickable && alwaysHighlighted
+                  ? "opacity-60 hover:opacity-100"
+                  : clickable
+                    ? "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-65 hover:!opacity-100"
+                    : "pointer-events-none opacity-0 transition group-hover:pointer-events-auto group-hover:opacity-100 focus:pointer-events-auto focus:opacity-100"
+              }`}
               title="Edit"
             >
               <Pencil className="h-3.5 w-3.5 text-ink-dim hover:text-brand-400" />
@@ -135,26 +167,26 @@ export default function EditableField({
         </div>
       ) : (
         <div
-          className={`relative z-10 min-h-[1.35em] select-text whitespace-pre-wrap break-words text-sm text-ink ${
-            clickable ? "cursor-pointer" : ""
-          }`}
+          className={`relative z-10 min-h-[1.35em] select-text whitespace-pre-wrap break-words text-sm leading-relaxed ${
+            value
+              ? clickable
+                ? isActive
+                  ? "font-semibold tracking-tight text-cyan-50"
+                  : alwaysHighlighted
+                    ? "font-semibold tracking-tight text-cyan-50/95"
+                    : "font-semibold tracking-tight text-white group-hover:text-cyan-50/95"
+                : "font-semibold tracking-tight text-white"
+              : "text-ink-dim"
+          } ${clickable ? "cursor-pointer" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
             handleCardActivate(e);
           }}
         >
           {value ? (
-            <span
-              className={
-                fromPdf
-                  ? "rounded-md bg-amber-500/15 px-1.5 py-0.5 text-ink shadow-sm ring-1 ring-amber-500/20"
-                  : undefined
-              }
-            >
-              {value}
-            </span>
+            value
           ) : (
-            <span className="text-ink-dim italic">— not extracted —</span>
+            <span className="font-normal italic">— not extracted —</span>
           )}
         </div>
       )}

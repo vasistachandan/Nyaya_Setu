@@ -11,6 +11,15 @@ from pypdf import PdfReader
 from config import settings
 
 
+def save_pdf_from_bytes(contents: bytes, pdf_hash: str) -> tuple[str, str]:
+    """Store PDF bytes as ``{pdf_hash}.pdf``; returns (absolute_path, stored_filename)."""
+    storage_dir = settings.storage_dir
+    stored_filename = f"{pdf_hash}.pdf"
+    target = storage_dir / stored_filename
+    target.write_bytes(contents)
+    return str(target.resolve()), stored_filename
+
+
 def save_uploaded_pdf(file_obj: BinaryIO, original_filename: str) -> tuple[str, str]:
     """Persist an uploaded PDF and return (absolute_path, stored_filename)."""
     storage_dir = settings.storage_dir

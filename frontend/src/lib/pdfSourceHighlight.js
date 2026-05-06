@@ -19,6 +19,7 @@ export function highlightQuoteInPageWrapper(pageWrapperEl, rawQuote) {
   if (!pageEl) return false;
 
   const layer =
+    pageEl.querySelector(".react-pdf__Page__textContent") ||
     pageEl.querySelector(".react-pdf__Page__textLayer") ||
     pageEl.querySelector(".textLayer");
   if (!layer || !rawQuote) return false;

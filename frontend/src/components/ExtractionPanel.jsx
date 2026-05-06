@@ -38,7 +38,7 @@ function Section({ icon: Icon, title, accent = "brand", children, right = null }
   );
 }
 
-export default function ExtractionPanel({ value, onChange, activeField, onFieldActivate }) {
+export default function ExtractionPanel({ value, onChange, activeFieldKey, onFieldActivate }) {
   if (!value) return null;
   const v = value;
 
@@ -56,44 +56,53 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
         right={<ConfidenceBadge value={v.overall_confidence} size="sm" />}>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <EditableField
+            fieldKey="case-details.case_number"
             label="Case Number"
+            alwaysHighlighted
             value={v.case_details.case_number}
             pdfSource={v.case_details.case_number_src}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["case_details", "case_number"], val)}
           />
           <EditableField
+            fieldKey="case-details.court_name"
             label="Court"
+            alwaysHighlighted
             value={v.case_details.court_name}
             pdfSource={v.case_details.court_name_src}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["case_details", "court_name"], val)}
           />
           <EditableField
+            fieldKey="case-details.date_of_order"
             label="Date of Order"
+            alwaysHighlighted
             value={v.case_details.date_of_order}
             pdfSource={v.case_details.date_of_order_src}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["case_details", "date_of_order"], val)}
           />
           <EditableField
+            fieldKey="case-details.bench"
             label="Bench"
+            alwaysHighlighted
             value={v.case_details.bench}
             pdfSource={v.case_details.bench_src}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["case_details", "bench"], val)}
           />
         </div>
         <EditableField
+          fieldKey="case-details.summary"
           label="Summary"
           multiline
           value={v.summary}
           pdfSource={v.summary_src}
-          activeField={activeField}
+          activeFieldKey={activeFieldKey}
           onFieldActivate={onFieldActivate}
           onChange={(val) => update(["summary"], val)}
         />
@@ -102,18 +111,22 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
       <Section icon={Users} title="Parties Involved" accent="brand">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <EditableField
+            fieldKey="parties.petitioner"
             label="Petitioner(s)"
             multiline
             value={v.parties.petitioner}
-            activeField={activeField}
+            pdfSource={v.parties.petitioner_src}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["parties", "petitioner"], val)}
           />
           <EditableField
+            fieldKey="parties.respondent"
             label="Respondent(s)"
             multiline
             value={v.parties.respondent}
-            activeField={activeField}
+            pdfSource={v.parties.respondent_src}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["parties", "respondent"], val)}
           />
@@ -176,11 +189,13 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
                   </div>
                 </div>
                 <EditableField
+                  fieldKey={`directions.${idx}.direction`}
                   label="Direction"
                   multiline
                   value={d.direction}
                   highlight={lowConf}
-                  activeField={activeField}
+                  pdfSource={d.source}
+                  activeFieldKey={activeFieldKey}
                   onFieldActivate={onFieldActivate}
                   onChange={(val) =>
                     update(
@@ -193,9 +208,11 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
                 />
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <EditableField
+                    fieldKey={`directions.${idx}.paragraph_reference`}
                     label="Paragraph Reference"
                     value={d.paragraph_reference}
-                    activeField={activeField}
+                    pdfSource={d.source}
+                    activeFieldKey={activeFieldKey}
                     onFieldActivate={onFieldActivate}
                     onChange={(val) =>
                       update(
@@ -279,9 +296,10 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
             </div>
             <div className="grid grid-cols-2 gap-2">
               <EditableField
+                fieldKey={`timelines.${idx}.event`}
                 label="Event"
                 value={t.event}
-                activeField={activeField}
+                activeFieldKey={activeFieldKey}
                 onFieldActivate={onFieldActivate}
                 onChange={(val) =>
                   update(
@@ -291,9 +309,10 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
                 }
               />
               <EditableField
+                fieldKey={`timelines.${idx}.date_or_period`}
                 label="Date / Period"
                 value={t.date_or_period}
-                activeField={activeField}
+                activeFieldKey={activeFieldKey}
                 onFieldActivate={onFieldActivate}
                 onChange={(val) =>
                   update(
@@ -340,33 +359,37 @@ export default function ExtractionPanel({ value, onChange, activeField, onFieldA
           />
         </div>
         <EditableField
+          fieldKey="action-plan.compliance_details"
           label="Compliance Details"
           multiline
           value={v.action_plan.compliance_details}
-          activeField={activeField}
+          activeFieldKey={activeFieldKey}
           onFieldActivate={onFieldActivate}
           onChange={(val) => update(["action_plan", "compliance_details"], val)}
         />
         <EditableField
+          fieldKey="action-plan.appeal_rationale"
           label="Appeal Rationale"
           multiline
           value={v.action_plan.appeal_rationale}
-          activeField={activeField}
+          activeFieldKey={activeFieldKey}
           onFieldActivate={onFieldActivate}
           onChange={(val) => update(["action_plan", "appeal_rationale"], val)}
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <EditableField
+            fieldKey="action-plan.limitation_period"
             label="Limitation Period"
             value={v.action_plan.limitation_period}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["action_plan", "limitation_period"], val)}
           />
           <EditableField
+            fieldKey="action-plan.nature_of_action"
             label="Nature of Action"
             value={v.action_plan.nature_of_action}
-            activeField={activeField}
+            activeFieldKey={activeFieldKey}
             onFieldActivate={onFieldActivate}
             onChange={(val) => update(["action_plan", "nature_of_action"], val)}
           />

@@ -53,6 +53,7 @@ class Case(Base):
     judgment_date: Mapped[str | None] = mapped_column(String(50), nullable=True)
     pdf_path: Mapped[str] = mapped_column(String(500), nullable=False)
     pdf_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    pdf_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     status: Mapped[CaseStatus] = mapped_column(
         Enum(CaseStatus, native_enum=False), default=CaseStatus.pending, nullable=False
     )

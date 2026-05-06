@@ -58,7 +58,7 @@ export default function VerifyPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [edited, setEdited] = useState(false);
-  const [activeField, setActiveField] = useState("");
+  const [activeHighlight, setActiveHighlight] = useState(null);
 
   const refreshCases = async () => {
     try {
@@ -78,7 +78,7 @@ export default function VerifyPage() {
   }, []);
 
   useEffect(() => {
-    setActiveField("");
+    setActiveHighlight(null);
   }, [selectedId]);
 
   useEffect(() => {
@@ -304,7 +304,7 @@ export default function VerifyPage() {
                 <div className="min-h-0 flex-1 overflow-auto">
                   <PDFViewer
                     pdfUrl={getCasePdfUrl(active.case.id)}
-                    searchText={activeField}
+                    highlight={activeHighlight}
                   />
                 </div>
               </div>
@@ -320,8 +320,8 @@ export default function VerifyPage() {
                   <ExtractionPanel
                     value={payload}
                     onChange={onPanelChange}
-                    activeField={activeField}
-                    onFieldActivate={setActiveField}
+                    activeFieldKey={activeHighlight?.key}
+                    onFieldActivate={setActiveHighlight}
                   />
                 )}
               </div>

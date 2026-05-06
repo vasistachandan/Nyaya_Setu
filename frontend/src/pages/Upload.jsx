@@ -9,6 +9,7 @@ import {
   Sparkles,
   Check,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { uploadPdf, runExtraction } from "../api/client";
 
@@ -24,10 +25,14 @@ export default function UploadPage() {
   const [stage, setStage] = useState(-1);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const navigate = useNavigate();
 
   const onDrop = useCallback((accepted) => {
-    if (accepted?.[0]) setFile(accepted[0]);
+    if (accepted?.[0]) {
+      setFile(accepted[0]);
+      setShowDuplicateModal(false);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -50,6 +55,11 @@ export default function UploadPage() {
       setResult({ ...up, extracted });
       toast.success("Judgment analysed — ready for verification.");
     } catch (e) {
+      if (e.response?.status === 409) {
+        setShowDuplicateModal(true);
+        setStage(-1);
+        return;
+      }
       toast.error("Failed to process: " + (e?.response?.data?.detail || e.message));
       setStage(-1);
     }
@@ -109,6 +119,7 @@ export default function UploadPage() {
                     onClick={() => {
                       setFile(null);
                       setStage(-1);
+                      setShowDuplicateModal(false);
                     }}
                     disabled={stage >= 0 && stage < 3}
                   >
@@ -151,7 +162,7 @@ export default function UploadPage() {
             </>
           ) : (
             <ResultCard result={result} onNext={() => navigate(`/verify/${result.case_id}`)} onAnother={() => {
-              setFile(null); setResult(null); setStage(-1);
+              setFile(null); setResult(null); setStage(-1); setShowDuplicateModal(false);
             }} />
           )}
         </div>
@@ -192,6 +203,35 @@ export default function UploadPage() {
           </li>
         </ol>
       </aside>
+
+      {showDuplicateModal && (
+        <DuplicateModal
+          onClose={() => setShowDuplicateModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function DuplicateModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-bg/70 backdrop-blur-sm">
+      <div className="card-raised w-[min(420px,92vw)] p-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display text-lg font-semibold text-ink">
+            Duplicate upload
+          </h3>
+          <button type="button" onClick={onClose} className="text-ink-dim hover:text-ink" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <p className="text-sm text-ink-muted">Document already exists.</p>
+        <div className="mt-6 flex justify-end">
+          <button type="button" className="btn-primary" onClick={onClose}>
+            OK
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
